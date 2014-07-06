@@ -1,0 +1,143 @@
+"""
+Clone of 2048 game.
+"""
+import random
+import poc_2048_gui        
+
+# Directions, DO NOT MODIFY
+UP = 1
+DOWN = 2
+LEFT = 3
+RIGHT = 4
+
+# Offsets for computing tile indices in each direction.
+# DO NOT MODIFY this dictionary.    
+OFFSETS = {UP: (1, 0), 
+           DOWN: (-1, 0), 
+           LEFT: (0, 1), 
+           RIGHT: (0, -1)} 
+   
+def merge(line):
+    '''
+    merges tiles
+    
+    '''
+    
+    result = [0] * len(line)
+    merged = True
+    index = 0
+    
+    for dummy_i in range(len(line)):  
+        
+        if line[dummy_i] != 0:
+            if index != dummy_i and result[index] == line[dummy_i] and merged == False:                
+                result[index] *= 2
+                index += 1
+                merged = True
+            elif result[index] == 0:
+                result[index] = line[dummy_i]
+                merged = False
+            else:
+                index += 1
+                result[index] = line[dummy_i]
+                merged = False
+                
+    return result      
+
+class TwentyFortyEight:
+    """
+    Class to run the game logic.
+    """
+
+    def __init__(self, grid_height, grid_width):
+        self.board = []
+        self.grid_height = grid_height
+        self.grid_width = grid_width   
+        self.grid_boundary =  self.initial_indice_dict = {
+                                    UP : list(tuple([0, dummy_x]) for dummy_x in range(grid_width)),
+                                    DOWN : list(tuple([grid_height - 1, dummy_x]) for dummy_x in range(grid_width)),
+                                    LEFT : list(enumerate(0 for dummy_x in range(grid_height))),
+                                    RIGHT : list(enumerate(grid_width - 1 for dummy_x in range(grid_height)))
+                                    }
+        self.reset()
+        
+    def reset(self):
+        '''
+        creates a grid
+        
+        '''
+        self.grid = [ [0 for dummy_col in range(self.grid_width)] for dummy_row in range(self.grid_height)] 
+
+    def get_grid_height(self):
+        '''
+        returns the grid height
+        
+        '''
+        return self.grid_height
+    
+    def get_grid_width(self):
+        '''
+        returns the grid width
+        
+        '''
+        return self.grid_width
+    
+    def __str__(self):
+        return str(self.grid)
+    
+    def move(self, direction): 
+        '''
+        move method
+        
+        '''
+        for num in self.grid_boundary[direction]:
+            temp_list = []
+            num_list = list(num)
+            while 0 <= num_list[0] < self.grid_height and 0 <= num_list[1] < self.grid_width:
+                temp_list.append((self.get_tile(num_list[0],num_list[1])))
+                num_list[0] += OFFSETS[direction][0]
+                num_list[1] += OFFSETS[direction][1]            
+            temp_merge_list = merge(temp_list)            
+            num_list1 = list(num)
+            for num1 in temp_merge_list:
+                self.set_tile(num_list1[0], num_list1[1], num1)
+                num_list1[0] += OFFSETS[direction][0]
+                num_list1[1] += OFFSETS[direction][1]
+        self.new_tile()        
+ 
+    
+    def new_tile(self):
+        '''
+        creates a new tile
+        also checks for empty spaces
+        
+        '''
+        zero_list = []
+        for dummy_row in range(self.grid_width):
+            for dummy_col in range(self.grid_height):
+                if self.grid[dummy_row][dummy_col] == 0:
+                    zero_tile = [dummy_row, dummy_col]
+                    zero_list.append(zero_tile)
+                    
+        random_tile = random.choice(zero_list)
+        new_tile = random.choice([2, 2, 2, 2, 2, 2, 2, 2, 2, 4])
+        
+        if len(zero_list) > 0:
+            self.set_tile(random_tile[0], random_tile[1], new_tile)
+            
+    def set_tile(self, row, col, value):
+        '''
+        set tile method
+        
+        '''
+        self.grid[row][col] = value
+
+    def get_tile(self, row, col):
+        '''
+        get tile method
+        
+        '''
+        return self.grid[row][col]
+ 
+    
+poc_2048_gui.run_gui(TwentyFortyEight(4, 4))
